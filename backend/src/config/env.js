@@ -9,5 +9,6 @@ export const ENV = {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
     GOOGLE_USER: process.env.GOOGLE_USER,
-    JWT_SECRET : process.env.JWT_SECRET
+    JWT_SECRET : process.env.JWT_SECRET,
+    GOOGLE_API_KEY : process.env.GOOGLE_API_KEY,
 }
