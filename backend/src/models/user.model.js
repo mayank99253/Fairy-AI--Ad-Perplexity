@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    resetOtp:{
+        type :String,
+        default : null
+    },
+    resetOtpExpiresAt : {
+        type :Date,
+        default : null
+    }
 }, { timestamps: true }) 
 
 userSchema.pre("save" , async function (){
