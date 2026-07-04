@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     resetOtpExpiresAt : {
         type :Date,
         default : null
+    },
+    verificationEmailSentAt : {
+        type :Date,
+        default : null
     }
 }, { timestamps: true }) 
 

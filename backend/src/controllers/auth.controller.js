@@ -6,7 +6,10 @@ import { generateToken } from "../config/generateToken.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import crypto from "crypto"
-
+import { SendingWelcomeEmail } from "../emails/sendWelcomeEmail.js";
+import { SendingResendEmail } from "../emails/sendResendVerificationEmail.js";
+import { SendingOtpEmail } from "../emails/sendOtpEmail.js";
+import { AlreadyVerifiedHtml, VerifiedUserEmail } from "../templates/email.template.js";
 
 export const signupController = async (req, res) => {
     try {
@@ -15,47 +18,24 @@ export const signupController = async (req, res) => {
         const AlreadtExistUser = await userModel.findOne({ email })
         if (AlreadtExistUser) return apiError(res, 409, "Email or username already exists. Please use a different one.")
 
-        if (AlreadtExistUser.username) return apiError(res, 409, "Email or username already exists. Please use a different one.")
+        const AlreadyExistUsername = await userModel.findOne({ username })
+        if (AlreadyExistUsername) return apiError(res, 409, "Email or username already exists. Please use a different one.")
 
         // Create user
         const user = await userModel.create({
             username,
             email,
-            password
+            password,
+            verificationEmailSentAt: Date.now()
         });
 
-        const verificationToken = jwt.sign({ userEmail: user.email }, ENV.JWT_SECRET, { expiresIn: "1d" });
+        const verificationToken = jwt.sign({ userId: user._id }, ENV.JWT_SECRET, { expiresIn: "1d" });
 
-        // 1. Construct the unique verification URL
+        // Construct the unique verification URL
         const verificationUrl = `${ENV.BASE_URL}/verify-email?token=${verificationToken}`;
 
-        // 2. Send the email using your template
-        await sendEmail({
-            to: email,
-            subject: "Welcome To Orbit",
-            text: "Welcome to Orbit! Please verify your email by copying and pasting this link into your browser: ${verificationUrl}",
-            html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <h2 style="color: #333333;">Welcome to Orbit! </h2>
-            <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-                Thank you for signing up. Please verify your email address to get started and unlock full access to your account.
-            </p>
-            <div style="margin: 30px 0; text-align: center;">
-                <a href=${verificationUrl}
-                   style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">
-                   Verify Email Address
-                </a>
-            </div>
-            <p style="color: #777777; font-size: 14px;">
-                If the button above doesn't work, copy and paste this link into your web browser:
-            </p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="color: #999999; font-size: 12px; text-align: center;">
-                If you did not create an account with Orbit, you can safely ignore this email.
-            </p>
-        </div>
-    `
-        });
+        //  Send the email using your template
+       await SendingWelcomeEmail(verificationUrl , email)
 
         const userResponse = user.toObject()
         delete userResponse.password;
@@ -121,61 +101,27 @@ export const verifyEmailController = async (req, res) => {
         if (!decoded) return apiError(res, 401, "Unauthorized Token");
 
         const user = await userModel.findOne({
-            email: decoded.userEmail
+            _id : decoded.userId
         });
         if (!user) return apiError(res, 401, "Unauthorized Token");
-
-        user.verified = true
-        await user.save();
 
         // Inside your controller function
         const loginUrl = `http://localhost:5173/login`; // Replace with your login page URL
 
-        const htmlResponse = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Verified</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        // 1. Check if the user is already verified
+        if (user.verified) {
+            const alreadyVerifiedHtml =AlreadyVerifiedHtml(loginUrl)
+            res.setHeader('Content-Type', 'text/html');
+            return res.send(alreadyVerifiedHtml); // return lagana zaroori hai taaki aage ka code na chale
+        }
 
-    <div style="background-color: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); max-width: 440px; width: 100%; text-align: center; box-sizing: border-box; border: 1px solid #e2e8f0; margin: 20px;">
-        
-        <!-- Success Icon -->
-        <div style="background-color: #f0fdf4; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;">
-            <svg style="width: 32px; height: 32px; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-            </svg>
-        </div>
+        //If user is NOT verified, verify them now
+        user.verified = true;
+        await user.save();
 
-        <!-- Heading -->
-        <h1 style="color: #0f172a; font-size: 24px; font-weight: 700; margin: 0 0 12px 0; line-height: 1.3;">
-            Account Verified!
-        </h1>
+        const htmlResponse = VerifiedUserEmail(loginUrl)
 
-        <!-- Message -->
-        <p style="color: #64748b; font-size: 15px; line-height: 1.6; margin: 0 0 32px 0;">
-            Thanks for connecting with us! Your email has been successfully verified, and your account is ready. You can now log in to your dashboard.
-        </p>
-
-        <!-- Modern CTA Button -->
-        <a href="${loginUrl}" style="display: block; background-color: #4f46e5; color: #ffffff; padding: 14px 24px; text-decoration: none; font-weight: 600; font-size: 15px; border-radius: 8px; transition: background-color 0.2s ease; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">
-            Log In to Your Account
-        </a>
-
-        <!-- Footer -->
-        <p style="color: #94a3b8; font-size: 13px; margin: 32px 0 0 0;">
-            Need help? Contact our <a href="mailto:support@yourdomain.com" style="color: #4f46e5; text-decoration: none; font-weight: 500;">support team</a>.
-        </p>
-    </div>
-
-</body>
-</html>
-`;
-
-        // Send the HTML response
+        // Send the HTML response for newly verified user
         res.setHeader('Content-Type', 'text/html');
         res.send(htmlResponse);
     } catch (error) {
@@ -219,62 +165,7 @@ export const forgetPasswordController = async (req, res) => {
 
         const hashOtp = await bcrypt.hash(generateOtp, 10);
 
-        const emailHtml = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset OTP</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; }
-        .email-container { max-width: 550px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef2f5; }
-        .email-header { background-color: #4F46E5; padding: 30px; text-align: center; color: #ffffff; }
-        .email-header h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px; }
-        .email-body { padding: 40px 30px; color: #334155; line-height: 1.6; }
-        .email-body p { margin: 0 0 20px 0; font-size: 16px; }
-        .otp-container { text-align: center; margin: 30px 0; padding: 15px; background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; }
-        .otp-code { font-size: 32px; font-weight: 700; color: #4F46E5; letter-spacing: 6px; margin: 0; }
-        .warning-text { font-size: 13px; color: #64748b; background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-top: 25px; }
-        .email-footer { background-color: #f8fafc; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #eef2f5; }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="email-header">
-            <h2>Password Reset Request</h2>
-        </div>
-        
-        <div class="email-body">
-            <p>Hello,</p>
-            <p>We received a request to reset the password for your account. Please use the 6-digit One-Time Password (OTP) below to proceed with the reset:</p>
-            
-            <div class="otp-container">
-                <h1 class="otp-code">${generateOtp}</h1>
-            </div>
-            
-            <p>For security purposes, this OTP is only valid for <strong>10 minutes</strong>.</p>
-            
-            <div class="warning-text">
-                <strong>Security Notice:</strong> If you did not request this change, please ignore this email. Your password remains completely secure.
-            </div>
-        </div>
-        
-        <div class="email-footer">
-            <p>&copy; ${new Date().getFullYear()} Orbit. All rights reserved.</p>
-            <p>This is an automated email, please do not reply directly to this message.</p>
-        </div>
-    </div>
-</body>
-</html>
-`;
-
-        await sendEmail({
-            to: user.email,
-            subject: "Your Password Reset OTP",
-            text: `Your password reset OTP is ${generateOtp}. It is valid for 10 minutes.`, // Plain text fallback
-            html: emailHtml
-        });
+        await SendingOtpEmail(generateOtp , user.email);
 
         user.resetOtp = hashOtp,
             user.resetOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000) // valid for the 10 min
@@ -404,6 +295,80 @@ export const resetPasswordController = async (req, res) => {
         if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
             return apiError(res, 401, "Unauthorized Token");
         }
+        console.error(error);
+        return apiError(res, 500, "Internal Server Error");
+    }
+}
+
+
+export const resendEmailVerificationController = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await userModel.findOne({ email });
+        if (!user) return apiError(res, 404, "User not found");
+
+        if (user.verified) return apiError(res, 400, "User is already verified");
+
+        const COOLDOWN_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
+        const currentTime = Date.now();
+
+        if (user.verificationEmailSentAt) {
+            const timePassed = currentTime - new Date(user.verificationEmailSentAt).getTime();
+
+            if (timePassed < COOLDOWN_TIME) {
+                // Calculate remaining seconds
+                const timeLeft = Math.ceil((COOLDOWN_TIME - timePassed) / 1000);
+
+                return res.status(429).json({
+                    message: `Please wait before requesting another email.`,
+                    timeLeft: timeLeft // Sending remaining seconds back to frontend
+                });
+            }
+        }
+
+
+        // Generate a new verification token
+        const verificationToken = jwt.sign({ userId: user._id, purpose: "email-verification" }, ENV.JWT_SECRET, { expiresIn: "1d" });
+        // Send the verification email
+        const verificationUrl = `${ENV.BASE_URL}/verify-email?token=${verificationToken}`;
+
+        await SendingResendEmail(verificationUrl , email);
+        user.verificationEmailSentAt = currentTime;
+        await user.save();
+
+        return res.status(200).json({ message: "Verification email resent successfully" });
+    } catch (error) {
+        console.error(error);
+        return apiError(res, 500, "Internal Server Error");
+    }
+}
+
+
+export const changePasswordController = async (req, res) => {
+    try {
+        const { confirmPassword, newPassword , oldPassword} = req.body;
+        const userId = req.user._id;
+
+        if(!confirmPassword || !newPassword || !oldPassword)  return apiError(res, 400, "All fields are required");
+
+        if(confirmPassword !== newPassword)  return apiError(res, 400, "Passwords do not match");
+
+        const user = await userModel.findById(userId).select("+password");
+        if(!user) return apiError(res, 404, "User not found");
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if(!isMatch) return apiError(res, 400, "Old Password is incorrect");
+
+        const isMatchNewpassword = await bcrypt.compare(newPassword, user.password);
+        if(isMatchNewpassword) return apiError(res, 400, "New password cannot be the same as the current password");
+
+        user.password = confirmPassword;
+        await user.save();
+
+        return res.status(200).json({ message: "Password changed successfully" });
+        
+    } catch (error) {
         console.error(error);
         return apiError(res, 500, "Internal Server Error");
     }
