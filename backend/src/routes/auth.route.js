@@ -1,9 +1,11 @@
 import express from "express"
 import {
+    changePasswordController,
     forgetPasswordController,
     getUserController,
     loginController,
     logoutController,
+    resendEmailVerificationController,
     resetPasswordController,
     signupController,
     verifyEmailController,
@@ -70,3 +72,18 @@ authRouter.post("/verify-otp", verifyOtpController);
  * @access  Public
  */
 authRouter.post("/reset-password", resetPasswordController);
+
+/**
+ * @route   POST /api/auth/resend-email-verification
+ * @desc    Resend the email verification link to the user
+ * @access  Public
+ */
+authRouter.post("/resend-email-verification", resendEmailVerificationController);
+
+/**
+ * @route   GET /api/auth/change-password
+ * @desc    Change the user's password after successful authentication
+ * @access  Private
+ */
+authRouter.post("/change-password", protectedRoute, changePasswordController);
+
