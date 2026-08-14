@@ -61,8 +61,7 @@ export const useAuth = ()=>{
             dispatch(setUser(data.user));
             return data.message;
         } catch (error) {
-            toast.error(error)
-            dispatch(setUserError(error)); 
+            dispatch(setUserError(error.message)); 
         }finally{
             dispatch(setisUserLoading(false))
         }

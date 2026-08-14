@@ -189,6 +189,7 @@ export default function SignupPage() {
                   required
                   placeholder="Minimum 8 characters"
                   value={password}
+                  minLength={8}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-zinc-800 bg-zinc-900/30 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 transition-all duration-200 focus:border-zinc-600 focus:bg-zinc-950 focus:outline-none focus:ring-1 focus:ring-zinc-600"
                 />

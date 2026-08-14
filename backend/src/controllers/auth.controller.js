@@ -67,8 +67,8 @@ export const loginController = async (req, res,) => {
             return apiError(res, 403, "Please verify your email first");
         }
 
-        const MatchPassword = await bcrypt.compare(password, user.password)
-        if (!MatchPassword) return apiError(res, 401, "Invalid Credentials");
+        const passwordMatches  = await bcrypt.compare(password, user.password)
+        if (!passwordMatches ) return apiError(res, 401, "Invalid Credentials");
 
         const userResponse = user.toObject()
         delete userResponse.password
