@@ -1,35 +1,41 @@
 import React, { useState } from 'react';
-import { 
-  Bot, 
-  ArrowRight, 
-  Mail, 
-  Lock, 
+import {
+  Bot,
+  ArrowRight,
+  Mail,
+  Lock,
   User,
-  Sparkles, 
+  Sparkles,
   CheckCircle2,
   Building,
   Terminal
 } from 'lucide-react';
+import { useAuth } from '../hook/useAuth';
+import { useSelector } from 'react-redux';
+import PageLoader from '../../../components/Loader/PageLoader';
 
 export default function SignupPage() {
+  const { handleRegister } = useAuth()
+  const { isUserLoading } = useSelector((s) => s.auth);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    // Handle signup logic here
+    const res = await handleRegister(email , name, password)
   };
+  if(isUserLoading) return <PageLoader />
 
   return (
     <div className="min-h-screen bg-[#030303] text-gray-100 flex font-sans antialiased selection:bg-zinc-800 selection:text-white">
-      
+
       {/* Left Column: Ambient/Branding Section (Hidden on mobile) */}
       <div className="relative hidden w-1/2 overflow-hidden border-r border-zinc-800/80 bg-gradient-to-b from-zinc-900 to-black lg:flex lg:flex-col lg:justify-between p-12">
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
-        
+
         {/* Glowing Ambient Orb */}
         <div className="absolute -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-purple-500/10 blur-[150px]" />
         <div className="absolute -top-40 right-0 h-[400px] w-[400px] rounded-full bg-blue-500/10 blur-[120px]" />
@@ -87,7 +93,7 @@ export default function SignupPage() {
 
       {/* Right Column: Interaction Form */}
       <div className="flex w-full flex-col justify-between p-6 sm:p-12 lg:w-1/2 bg-black">
-        
+
         {/* Header Navigation for Mobile */}
         <div className="flex items-center justify-between lg:justify-end">
           <div className="flex items-center gap-2 lg:hidden">
@@ -183,6 +189,7 @@ export default function SignupPage() {
                   required
                   placeholder="Minimum 8 characters"
                   value={password}
+                  minLength={8}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-zinc-800 bg-zinc-900/30 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 transition-all duration-200 focus:border-zinc-600 focus:bg-zinc-950 focus:outline-none focus:ring-1 focus:ring-zinc-600"
                 />

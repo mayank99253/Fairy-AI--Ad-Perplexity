@@ -1,14 +1,19 @@
-import { createBrowserRouter } from "react-router-dom";
-import Login from "../feature/pages/Login";
-import Signup from "../feature/pages/Signup";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import Login from './feature/auth/pages/Login'
+import Signup from "./feature/auth/pages/Signup";
+import Home from "./feature/user/Home/Home";
 
-export const route = createBrowserRouter([
+export const router = (user)=> createBrowserRouter([
     {
         path : "/login",
-        element: <Login />
+        element: user ? <Navigate to='/' replace /> : <Login />
+    },
+    {
+        path : "/",
+        element: user ? <Home />: <Navigate to='/login' replace /> 
     },
     {
         path : "/signup",
-        element: <Signup />
+        element: user ? <Navigate to='/' replace /> : <Signup />
     },
 ])
