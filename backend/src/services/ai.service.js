@@ -2,6 +2,26 @@ import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ENV } from "../config/env.js";
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { createAgent, tool } from "langchain"
+import { sendEmail } from "./mail.service.js";
+import * as z from "zod" // using zod for the defineing the data stuctrue and formates
+
+
+const emailTool = tool(
+  sendEmail, {
+  name: "emailTool",
+  description: `Use this tool to send an email. If the user does not provide the exact body/content, 
+compose a complete, professional, well-formatted email yourself based on the subject and context. 
+Never send a single short line — always write a proper structured email with greeting, body, and closing.`,
+  schema: z.object({
+    to: z.string().describe("The recipient's email address"),
+    subject: z.string().describe("The subject of the email"),
+    text: z.string().optional().describe("Plain text content of the email"),
+    html: z.string().describe("The HTML content of the email"),
+  })
+}
+)
+
 
 const mistralModel = new ChatMistralAI({
   model: "mistral-small-latest",
@@ -13,15 +33,18 @@ const geminiModel = new ChatGoogleGenerativeAI({
   apiKey: ENV.GOOGLE_API_KEY
 })
 
-
+const agent = createAgent({
+  tools: [emailTool],
+  model: geminiModel
+});
 
 
 export const generateChatTitle = async (message) => {
   try {
     const result = await mistralModel.invoke([new SystemMessage(`you are a helpful assistant that generate concise and descriptive titles for the chat conversation
-      User will provide you with the first message of the chat conversation , and you will generate a title That captures the essence of the conversation in 2-4 words. The title should be clear , relevant and engaging , giving users a quick understanding of the chat's topic`) , new HumanMessage(` Generate a title For a chat conversation based on the following first message : ${message}`)])
+      User will provide you with the first message of the chat conversation , and you will generate a title That captures the essence of the conversation in 2-4 words. The title should be clear , relevant and engaging , giving users a quick understanding of the chat's topic`), new HumanMessage(` Generate a title For a chat conversation based on the following first message : ${message}`)])
 
-      return result.content
+    return result.content
   } catch (error) {
     console.error("Error generating embeddings:", error);
     throw error;
@@ -30,14 +53,50 @@ export const generateChatTitle = async (message) => {
 
 export const generateAIResponse = async (messages) => {
   try {
-    const result = await geminiModel.invoke(messages.map(msg => {
-      if(msg.role === "user" ){
+    const chatHistory = messages.map(msg => {
+      if (msg.role === "user") {
         return new HumanMessage(msg.content)
-      }else if(msg.role === "ai"){
+      } else if (msg.role === "ai") {
         return new AIMessage(msg.content)
       }
-    }));
-    return result.content;
+    });
+    
+    const systemPrompt = new SystemMessage(
+      `You are a helpful assistant. When the user asks you to send an email but does not 
+  explicitly provide the body/content, you must write the email content yourself.
+
+  Follow these rules strictly when composing email content:
+  - Always write a professional, well-structured email — never a one-liner.
+  - Include a proper greeting (e.g. "Hi there,"), a well-developed main body (at least 3-4 sentences 
+    or paragraphs depending on context), and a proper closing/sign-off (e.g. "Best regards,").
+  - If the subject implies a specific type of content (joke, story, update, invitation, etc.), 
+    expand on it fully — e.g. for a "joke" subject, include a short friendly intro line, 
+    the actual joke, and a light closing remark. Do not just paste a single line.
+  - Use the "html" field to format the email nicely (paragraphs using <p> tags, line breaks, 
+    and simple structure) so it looks presentable in an email client.
+  - Do not just repeat the user's instruction as the email body — always generate original, 
+    complete content.`
+    );
+    const result = await agent.invoke({ messages: [systemPrompt, ...chatHistory] });
+
+    const lastMessage = result.messages[result.messages.length - 1];
+
+    // Normalize content: handle string, array-of-blocks, or empty array
+    let textContent = "";
+    if (typeof lastMessage.content === "string") {
+      textContent = lastMessage.content;
+    } else if (Array.isArray(lastMessage.content)) {
+      textContent = lastMessage.content
+        .map((block) => (typeof block === "string" ? block : block.text || ""))
+        .join("");
+    }
+
+    // Fallback if still empty (e.g. last message was a tool call with no text)
+    if (!textContent.trim()) {
+      textContent = "Done! I've completed the requested action.";
+    }
+
+    return textContent;
   } catch (error) {
     console.error("Error generating embeddings:", error);
     throw error;

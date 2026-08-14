@@ -9,15 +9,23 @@ import {
     Zap,
     Globe
 } from 'lucide-react';
+import { useAuth } from '../hook/useAuth';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom'
+import PageLoader from '../../../components/Loader/PageLoader';
 
 export default function Login() {
-    const [email, setEmail] = useState('');
+    const { handleLogin } = useAuth()
+    const { isUserLoading } = useSelector((s) => s.auth);
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle authentication logic here
+        await handleLogin(identifier, password)
     };
+
+    if (isUserLoading) return <PageLoader />
 
     return (
         <div className="min-h-screen bg-[#030303] text-gray-100 flex font-sans antialiased selection:bg-zinc-800 selection:text-white">
@@ -135,18 +143,18 @@ export default function Login() {
                     {/* Interactive Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <label htmlFor="email" className="text-xs font-medium text-zinc-400">
-                                Work Email
+                            <label htmlFor="identifier" className="text-xs font-medium text-zinc-400">
+                                Work identifier
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
                                 <input
-                                    id="email"
-                                    type="email"
+                                    id="identifier"
+                                    type="identifier"
                                     required
                                     placeholder="name@company.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
                                     className="w-full rounded-lg border border-zinc-800 bg-zinc-900/30 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 transition-all duration-200 focus:border-zinc-600 focus:bg-zinc-950 focus:outline-none focus:ring-1 focus:ring-zinc-600"
                                 />
                             </div>
@@ -184,6 +192,13 @@ export default function Login() {
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </button>
                     </form>
+
+                    <div className='flex gap-2 text-xs justify-center items-center  text-zinc-600'>
+                        <p>Do not have any Account ?</p>
+                        <Link to='/signup' className='text-amber-400 underline'>
+                            Click Me
+                        </Link>
+                    </div>
 
                     {/* SSO Notice */}
                     <p className="text-center text-xs text-zinc-600">

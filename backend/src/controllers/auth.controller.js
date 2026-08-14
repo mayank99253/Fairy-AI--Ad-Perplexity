@@ -42,8 +42,7 @@ export const signupController = async (req, res) => {
         // Success
         return res.status(201).json({
             success: true,
-            message: "Account created successfully",
-            user: userResponse
+            message: "Account created successfully , Verification Link Sent On Your Email",
         });
 
     } catch (error) {
@@ -62,14 +61,14 @@ export const loginController = async (req, res,) => {
             ]
         }).select("+password");
 
-        if (!user) return apiError(res, 401, "Invalid email or username");
+        if (!user) return apiError(res, 401, "Invalid Credentials");
 
         if (!user.verified) {
             return apiError(res, 403, "Please verify your email first");
         }
 
         const MatchPassword = await bcrypt.compare(password, user.password)
-        if (!MatchPassword) return apiError(res, 401, "Invalid email or username");
+        if (!MatchPassword) return apiError(res, 401, "Invalid Credentials");
 
         const userResponse = user.toObject()
         delete userResponse.password

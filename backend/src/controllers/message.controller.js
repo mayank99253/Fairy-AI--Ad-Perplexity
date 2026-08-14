@@ -27,17 +27,17 @@ export const sendMessage = async (req, res) => {
         }
         
         const userMessage = await messageModel.create({
-            chat : chatId ||chatExists._id || chat._id,
-            content : message,
-            role : "user"
+            chat: chatId || chat._id,
+            content: message,
+            role: "user"
         });
 
-        const messages = await messageModel.find({chat: chatId || chatExists._id || chat._id});
+        const messages = await messageModel.find({chat: chatId || chat._id});
 
         const aiResponse = await generateAIResponse(messages);
         
         const aiMessage = await messageModel.create({
-            chat: chatId || chatExists._id || chat._id,
+            chat: chatId  || chat._id,
             content: aiResponse,
             role: "ai"
         });
@@ -45,7 +45,7 @@ export const sendMessage = async (req, res) => {
 
         return res.status(200).json({ 
             title : title || chatExists.title , 
-            chat: chatId || chatExists._id || chat._id,
+            chat: chatId || chat._id,
              aiMessage });
 
     } catch (error) {

@@ -31,6 +31,8 @@ export async function sendEmail({ to, subject, text, html }) {
         console.log("Message sent: %s", info.messageId);
         // Preview URL is only available when using an Ethereal test account
         console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+        return "Email sent successfully to " + to;  
     } catch (err) {
         console.error("Error while sending mail:", err);
     }
