@@ -42,7 +42,7 @@ export const AlreadyVerifiedHtml = (loginUrl) => {
     return alreadyVerifiedEmail
 }
 
-export const VerifiedUserEmail = (loginUrl)=>{
+export const VerifiedUserEmail = (loginUrl) => {
     const verifiedUser = `
     <!DOCTYPE html>
     <html lang="en">
