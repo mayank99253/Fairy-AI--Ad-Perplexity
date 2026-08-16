@@ -23,7 +23,6 @@ const MessageInput = () => {
         }
 
         }
-    };
 
     return (
         <div className="p-4 z-10 max-w-4xl w-full mx-auto">

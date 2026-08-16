@@ -12,21 +12,24 @@ import {
   Flame,
   SearchIcon,
   NotebookPen,
-  Trash2
+  Trash2,
+  Menu,
+  X
 } from 'lucide-react';
 import { useChat } from '../chat/hook/useChat';
 import { useSelector } from 'react-redux';
 
 export default function HomePage() {
-  const { handleGetChat, handleDeleteChat } = useChat(); // Added handleDeleteChat from hook (if available)
-  const { chats } = useSelector((s) => s.chat);
-  const { user } = useSelector((s) => s.auth);
+  const { handleGetChat, handleDeleteChat } = useChat();
+  const { chats = [] } = useSelector((s) => s.chat || {});
+  const { user } = useSelector((s) => s.auth || {});
 
   useEffect(() => {
     handleGetChat();
   }, [handleGetChat]);
 
   const [activeChatId, setActiveChatId] = useState();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState({
@@ -47,7 +50,7 @@ export default function HomePage() {
     });
   };
 
-  // Close context menu on outside click or scroll
+  // Close context menu & mobile sidebar on outside click/escape
   useEffect(() => {
     const handleClickOutside = () => {
       if (contextMenu.visible) {
@@ -56,7 +59,10 @@ export default function HomePage() {
     };
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') handleClickOutside();
+      if (e.key === 'Escape') {
+        handleClickOutside();
+        setIsMobileSidebarOpen(false);
+      }
     };
 
     window.addEventListener('click', handleClickOutside);
@@ -68,7 +74,7 @@ export default function HomePage() {
     };
   }, [contextMenu.visible]);
 
-  // Handle Chat Deletion Trigger
+  // Handle Chat Deletion
   const onDeleteClick = (chatId) => {
     if (handleDeleteChat) {
       handleDeleteChat(chatId);
@@ -85,13 +91,46 @@ export default function HomePage() {
     { path: 'library', label: 'Library', icon: Library },
   ];
 
-  const chatNumber = chats.length === 0 ? "" : chats.length;
+  const chatNumber = chats.length === 0 ? '' : chats.length;
 
   return (
-    <div className="flex h-screen w-full bg-[#090C10] text-slate-100 font-sans antialiased selection:bg-pink-500 selection:text-white">
+    <div className="flex h-screen w-full bg-[#090C10] text-slate-100 font-sans antialiased selection:bg-pink-500 selection:text-white overflow-hidden">
+      
+      {/* Scrollbar Custom Styles Injector */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1e293b;
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #334155;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #1e293b transparent;
+        }
+      `}</style>
+
+      {/* ================= MOBILE OVERLAY BACKDROP ================= */}
+      {isMobileSidebarOpen && (
+        <div 
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+        />
+      )}
 
       {/* ================= LEFT SIDEBAR ================= */}
-      <aside className="w-64 h-full bg-[#0D1117] border-r border-slate-800/60 flex flex-col justify-between shrink-0">
+      <aside 
+        className={`fixed md:relative z-50 h-full w-64 bg-[#0D1117] border-r border-slate-800/60 flex flex-col justify-between shrink-0 transition-transform duration-300 ease-in-out ${
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
         <div className="flex flex-col h-full overflow-hidden">
 
           {/* App Header & Branding */}
@@ -110,14 +149,26 @@ export default function HomePage() {
               </div>
             </div>
 
-            <Link to='/setting' className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 rounded-lg transition-colors">
-              <Settings className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-1">
+              <Link 
+                to="/setting" 
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 rounded-lg transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+              </Link>
+              <button 
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Primary Navigation Buttons */}
+          {/* Navigation Items */}
           <div className="p-2 space-y-1">
-            <nav className="p-2 space-y-1.5">
+            <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -125,17 +176,19 @@ export default function HomePage() {
                     key={item.path}
                     to={item.path}
                     end={item.end}
+                    onClick={() => setIsMobileSidebarOpen(false)}
                     className={({ isActive }) =>
-                      `w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all group duration-200 ${isActive
-                        ? ' bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 font-semibold border-purple-500/20 text-white hover:border-purple-500/40 shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/50 border border-transparent'
+                      `w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all group duration-200 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 font-semibold border border-purple-500/20 text-white shadow-sm'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800/50 border border-transparent'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <>
-                        <Icon className={`w-4 h-4 transition-colors group-hover:rotate-12 ${isActive ? 'text-pink-400' : 'text-white/40'}`} />
-                        <span className="text-white/40 bg-clip-text text-transparent">
+                        <Icon className={`w-4 h-4 transition-transform group-hover:rotate-12 ${isActive ? 'text-pink-400' : 'text-slate-400'}`} />
+                        <span className={isActive ? 'text-white' : 'text-slate-300'}>
                           {item.label}
                         </span>
                       </>
@@ -145,49 +198,58 @@ export default function HomePage() {
               })}
             </nav>
 
-            <Link to='/battle-arena' className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-purple-500/20 text-white font-medium text-sm group hover:border-purple-500/40 transition-all">
+            <Link 
+              to="/battle-arena" 
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 mt-2 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-purple-500/20 text-white font-medium text-sm group hover:border-purple-500/40 transition-all"
+            >
               <div className="flex items-center gap-3">
                 <Swords className="w-4 h-4 text-pink-400 group-hover:rotate-12 transition-transform" />
                 <span className="bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
-                  AI Battle Areana
+                  AI Battle Arena
                 </span>
               </div>
               <span className="text-[10px] bg-gradient-to-r from-pink-500 to-purple-500 text-white px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1">
                 <Flame className="w-2.5 h-2.5" /> Live
               </span>
             </Link>
-
           </div>
 
           {/* All Chats Section Header */}
-          <div className="px-4 py-2 flex items-center justify-between text-xs font-semibold text-slate-400 camelcase tracking-wider border-t border-slate-800/40 mt-1">
+          <div className="px-4 py-2 flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider border-t border-slate-800/40 mt-1">
             <span>Recent</span>
-            <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">
-              {chatNumber}
-            </span>
+            {chatNumber && (
+              <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono">
+                {chatNumber}
+              </span>
+            )}
           </div>
 
           {/* Chat History List */}
           {chats.length === 0 ? (
-            <div className="flex-1 px-2 space-y-1 custom-scrollbar">
-              <h1 className='text-xs font-medium truncate text-white'> No conversatio Avaiable </h1>
+            <div className="flex-1 px-4 py-3 custom-scrollbar overflow-y-auto">
+              <p className="text-xs font-medium text-slate-400">No conversation available</p>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-2 space-y-1 custom-scrollbar">
-              {chats.toReversed().map((chat) => {
+              {chats.slice().reverse().map((chat) => {
                 const isActive = chat._id === activeChatId;
                 return (
                   <Link
                     to={`/${chat._id}`}
                     key={chat._id}
-                    onClick={() => setActiveChatId(chat._id)}
+                    onClick={() => {
+                      setActiveChatId(chat._id);
+                      setIsMobileSidebarOpen(false);
+                    }}
                     onContextMenu={(e) => handleContextMenu(e, chat._id)}
-                    className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 flex flex-col gap-1 relative group ${isActive
-                      ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-purple-500/30'
-                      : 'hover:bg-slate-800/40 border border-transparent'
-                      }`}
+                    className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 flex flex-col gap-1 relative group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-purple-500/30'
+                        : 'hover:bg-slate-800/40 border border-transparent'
+                    }`}
                   >
-                    {/* Active Rainbow Glow Bar */}
+                    {/* Active Rainbow Indicator */}
                     {isActive && (
                       <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-gradient-to-b from-pink-500 via-purple-500 to-cyan-500 shadow-sm shadow-purple-500/50" />
                     )}
@@ -200,10 +262,15 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex items-center justify-between pl-6 text-[10px] text-slate-500">
-                      <span>{new Date(chat.createdAt).toLocaleString('en-IN', {
-                        day: '2-digit', month: 'short', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit', hour12: true
-                      })}</span>
+                      <span>
+                        {new Date(chat.createdAt).toLocaleString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
                     </div>
                   </Link>
                 );
@@ -220,12 +287,12 @@ export default function HomePage() {
                     <User className="w-4 h-4 text-cyan-300" />
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-slate-200">{user?.username}</p>
-                  <p className="text-[10px] text-slate-500">{user?.plan?.length > 0 ? user.plan : 'Free Plan'}</p>
+                <div className="truncate">
+                  <p className="text-xs font-semibold text-slate-200 truncate">{user?.username || 'Guest'}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{user?.plan?.length > 0 ? user.plan : 'Free Plan'}</p>
                 </div>
               </div>
-              <MoreHorizontal className="w-4 h-4 text-slate-500" />
+              <MoreHorizontal className="w-4 h-4 text-slate-500 shrink-0" />
             </div>
           </div>
 
@@ -233,15 +300,44 @@ export default function HomePage() {
       </aside>
 
       {/* ================= RIGHT MAIN CHAT AREA ================= */}
-      <main className="flex-1 flex flex-col h-full bg-[#090C10] relative overflow-y-auto">
-        <Outlet />
+      <main className="flex-1 flex flex-col h-full bg-[#090C10] relative overflow-hidden">
+        
+        {/* Mobile Header Bar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-slate-800/60 bg-[#0D1117] shrink-0">
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-2 -ml-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors"
+            aria-label="Open navigation sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-pink-400" />
+            <span className="font-bold text-sm bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              Fairy
+            </span>
+          </div>
+
+          <Link to="/setting" className="p-2 -mr-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors">
+            <Settings className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Content Outlet with Custom Scrollbar */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <Outlet />
+        </div>
       </main>
 
       {/* ================= RIGHT-CLICK CONTEXT MENU ================= */}
       {contextMenu.visible && (
         <div
           className="fixed z-50 min-w-[140px] bg-[#0D1117]/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md p-1 animate-in fade-in zoom-in-95 duration-100"
-          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+          style={{ 
+            top: `${Math.min(contextMenu.y, window.innerHeight - 60)}px`, 
+            left: `${Math.min(contextMenu.x, window.innerWidth - 150)}px` 
+          }}
         >
           <button
             onClick={() => onDeleteClick(contextMenu.chatId)}
