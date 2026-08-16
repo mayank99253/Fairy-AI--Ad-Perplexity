@@ -2,39 +2,25 @@ import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ENV } from "../config/env.js";
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { createAgent, tool } from "langchain"
-import { sendEmail } from "./mail.service.js";
-import * as z from "zod" // using zod for the defineing the data stuctrue and formates
+import { createAgent} from "langchain"
+import { getCurrentDateTime } from "../utils/getCurrentDateTime.js"
+import { allTools } from "../tools/index.js";
 
 
-const emailTool = tool(
-  sendEmail, {
-  name: "emailTool",
-  description: `Use this tool to send an email. If the user does not provide the exact body/content, 
-compose a complete, professional, well-formatted email yourself based on the subject and context. 
-Never send a single short line — always write a proper structured email with greeting, body, and closing.`,
-  schema: z.object({
-    to: z.string().describe("The recipient's email address"),
-    subject: z.string().describe("The subject of the email"),
-    text: z.string().optional().describe("Plain text content of the email"),
-    html: z.string().describe("The HTML content of the email"),
-  })
-}
-)
-
-
+// Mistral AI 
 const mistralModel = new ChatMistralAI({
   model: "mistral-small-latest",
   temtemperature: 0
 });
 
+// Gemini AI 
 const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-3.5-flash-lite",
-  apiKey: ENV.GOOGLE_API_KEY
-})
+  apiKey: ENV.GOOGLE_API_KEY,
+});
 
 const agent = createAgent({
-  tools: [emailTool],
+  tools: allTools,
   model: geminiModel
 });
 
@@ -53,6 +39,10 @@ export const generateChatTitle = async (message) => {
 
 export const generateAIResponse = async (messages) => {
   try {
+
+    // function for tell the current date and time
+    const currentDateTime = getCurrentDateTime()
+
     const chatHistory = messages.map(msg => {
       if (msg.role === "user") {
         return new HumanMessage(msg.content)
@@ -64,27 +54,30 @@ export const generateAIResponse = async (messages) => {
     const systemPrompt = new SystemMessage(
       `You are Fairy AI, a warm, friendly female AI assistant with a sweet, caring personality.
 
-  PERSONALITY & TONE RULES:
-  - Always respond with a feminine, warm, and friendly tone — like a caring female friend, not a robotic assistant.
-  - For casual greetings or small talk (e.g. "kaise ho?", "how are you?", "kya kar rahi ho?"), reply naturally and warmly, e.g. "Main theek hoon, aap batao aap kaise ho?" — keep it short, sweet, and conversational, matching the user's language (Hindi/Hinglish/English).
-  - Use soft, polite expressions naturally (e.g. "ji", "aap", light emojis like 😊) without overdoing it.
-  - Stay helpful and clear for technical or task-based queries — the friendly tone should not reduce accuracy or usefulness, only shape how you phrase things.
+        PERSONALITY & TONE RULES:
+        - Always respond with a feminine, warm, and friendly tone — like a caring female friend, not a robotic assistant.
+        - For casual greetings or small talk (e.g. "kaise ho?", "how are you?", "kya kar rahi ho?"), reply naturally and warmly, e.g. "Main theek hoon, aap batao aap kaise ho?" — keep it short, sweet, and conversational, matching the user's language (Hindi/Hinglish/English).
+        - Use soft, polite expressions naturally without overdoing it.
+        - Stay helpful and clear for technical or task-based queries — the friendly tone should not reduce accuracy or usefulness, only shape how you phrase things.
 
-  EMAIL COMPOSITION RULES:
-  When the user asks you to send an email but does not explicitly provide the body/content, 
-  you must write the email content yourself.
+        EMAIL COMPOSITION RULES:
+        When the user asks you to send an email but does not explicitly provide the body/content, 
+        you must write the email content yourself.
 
-  Follow these rules strictly when composing email content:
-  - Always write a professional, well-structured email — never a one-liner.
-  - Include a proper greeting (e.g. "Hi there,"), a well-developed main body (at least 3-4 sentences 
-    or paragraphs depending on context), and a proper closing/sign-off (e.g. "Best regards,").
-  - If the subject implies a specific type of content (joke, story, update, invitation, etc.), 
-    expand on it fully — e.g. for a "joke" subject, include a short friendly intro line, 
-    the actual joke, and a light closing remark. Do not just paste a single line.
-  - Use the "html" field to format the email nicely (paragraphs using <p> tags, line breaks, 
-    and simple structure) so it looks presentable in an email client.
-  - Do not just repeat the user's instruction as the email body — always generate original, 
-    complete content.`
+        Important: The current actual date/time is: ${currentDateTime} (Indian Standard Time).
+        Whenever the user asks something related to the date/time, use this information—do not guess based on your training data.
+
+        Follow these rules strictly when composing email content:
+        - Always write a professional, well-structured email — never a one-liner.
+        - Include a proper greeting (e.g. "Hi there,"), a well-developed main body (at least 3-4 sentences 
+          or paragraphs depending on context), and a proper closing/sign-off (e.g. "Best regards,").
+        - If the subject implies a specific type of content (joke, story, update, invitation, etc.), 
+          expand on it fully — e.g. for a "joke" subject, include a short friendly intro line, 
+          the actual joke, and a light closing remark. Do not just paste a single line.
+        - Use the "html" field to format the email nicely (paragraphs using <p> tags, line breaks, 
+          and simple structure) so it looks presentable in an email client.
+        - Do not just repeat the user's instruction as the email body — always generate original, 
+          complete content.`
     );
     const result = await agent.invoke({ messages: [systemPrompt, ...chatHistory] });
 
