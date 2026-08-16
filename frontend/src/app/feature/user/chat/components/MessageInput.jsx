@@ -17,8 +17,11 @@ const MessageInput = () => {
         setInputMessage('');
 
         const result = await handleSendMessage(userText, chatId);
+        if(!result) return setInputMessage(userText)
         if(!chatId && result?.chat) {
           navigate(`/${result?.chat}`)
+        }
+
         }
     };
 

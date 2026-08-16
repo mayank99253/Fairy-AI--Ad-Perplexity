@@ -110,9 +110,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            <button className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 rounded-lg transition-colors">
+            <Link to='/setting' className="p-2 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 rounded-lg transition-colors">
               <Settings className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
 
           {/* Primary Navigation Buttons */}
@@ -222,7 +222,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-200">{user?.username}</p>
-                  <p className="text-[10px] text-slate-500">{user?.plan?.length === 0 ? user?.plan : 'Free Plan'}</p>
+                  <p className="text-[10px] text-slate-500">{user?.plan?.length > 0 ? user.plan : 'Free Plan'}</p>
                 </div>
               </div>
               <MoreHorizontal className="w-4 h-4 text-slate-500" />
