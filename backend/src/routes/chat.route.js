@@ -3,9 +3,10 @@ import { deleteChat, getChat, getMessage, sendMessage } from "../controllers/mes
 import { protectedRoute } from "../middlewares/auth.middleware.js";
 
 export const chatRouter = express.Router();
+chatRouter.use(protectedRoute)
 
-chatRouter.post("/chat" , protectedRoute,  sendMessage)
-chatRouter.get("/" , protectedRoute,  getChat)
-chatRouter.get("/:chatId/messages" , protectedRoute,  getMessage)
-chatRouter.delete("/:chatId" , protectedRoute,  deleteChat)
+chatRouter.post("/send-message", sendMessage)
+chatRouter.get("/:chatId/messages", getMessage)
+chatRouter.get("/get-chats", getChat)
+chatRouter.delete("/:chatId", deleteChat)
 

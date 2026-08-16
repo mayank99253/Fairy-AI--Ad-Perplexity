@@ -44,7 +44,7 @@ export default function Login() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900 shadow-xl shadow-black/50">
                         <Bot className="h-5 w-5 text-zinc-200" />
                     </div>
-                    <span className="text-lg font-semibold tracking-tight text-white">JuhiOS</span>
+                    <span className="text-lg font-semibold tracking-tight text-white">Fairy</span>
                     <span className="rounded-md bg-zinc-800 px-2 py-0.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase border border-zinc-700/50">MOON RISE</span>
                 </div>
 
@@ -101,7 +101,7 @@ export default function Login() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
                             <Bot className="h-4 w-4 text-zinc-200" />
                         </div>
-                        <span className="text-sm font-semibold text-white">JuhiOS</span>
+                        <span className="text-sm font-semibold text-white">Fairy</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-zinc-400">
                         <span>Don't have an account?</span>
