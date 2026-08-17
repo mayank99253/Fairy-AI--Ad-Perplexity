@@ -65,7 +65,22 @@ const ChatContainer = () => {
                       : 'rounded-tl-none border border-slate-800 bg-slate-900/90 text-slate-200 shadow-md'
                   }`}
                 >
-                  <p className="whitespace-pre-line">{msg.content}</p>
+                  {/* Image Rendering */}
+                  {msg.imageUrl && (
+                    <div className="mb-3 overflow-hidden rounded-lg border border-slate-800/80">
+                      <img 
+                        src={msg.imageUrl} 
+                        alt="Generated content" 
+                        className="h-auto max-w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Text Content Rendering */}
+                  {msg.content && (
+                    <p className="whitespace-pre-line">{msg.content}</p>
+                  )}
                 </div>
 
                 {/* AI Response Footer Actions */}

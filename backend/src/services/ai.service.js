@@ -3,8 +3,8 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ENV } from "../config/env.js";
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { createAgent} from "langchain"
-import { getCurrentDateTime } from "../utils/getCurrentDateTime.js"
 import { allTools } from "../tools/index.js";
+import { getCurrentDateTime } from "../tools/src/getDateTime.tool.js";
 
 
 // Mistral AI 
@@ -98,7 +98,12 @@ export const generateAIResponse = async (messages) => {
       textContent = "Done! I've completed the requested action.";
     }
 
-    return textContent;
+    //check if the image generation tool was called , extract the info;
+    const imageToolMsg = result.messages.find((m)=> m.name === "generate_image");
+
+    const imageUrl = imageToolMsg ?  imageToolMsg.content : null
+
+    return {text : textContent , imageUrl};
   } catch (error) {
     console.error("Error generating embeddings:", error);
     throw error;
