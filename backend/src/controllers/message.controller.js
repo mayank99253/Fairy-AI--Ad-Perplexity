@@ -39,7 +39,8 @@ export const sendMessage = async (req, res) => {
 
         const aiMessage = await messageModel.create({
             chat: chatId || chat._id,
-            content: aiResponse,
+            content: aiResponse.text,
+            imageUrl: aiResponse.imageUrl,
             role: "ai"
         });
 
@@ -95,7 +96,7 @@ export const deleteChat = async (req, res) => {
         const { chatId } = req.params;
         const userId = req.user.id;
 
-        if (!mongoose.Types.ObjectId.isValid(chatId))  return apiError(res, 400, "Invalid Chat ID");
+        if (!mongoose.Types.ObjectId.isValid(chatId)) return apiError(res, 400, "Invalid Chat ID");
 
         const chat = await chatModel.findOneAndDelete({
             _id: chatId,
