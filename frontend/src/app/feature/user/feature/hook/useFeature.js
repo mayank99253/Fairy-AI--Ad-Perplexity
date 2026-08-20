@@ -10,7 +10,7 @@ export const useFeature = () => {
     const handleGetAllGenImages = useCallback(async () => {
         try {
             dispatch(setGenImagesError(null));
-            dispatch(setGenImagesLoading(false));
+            dispatch(setGenImagesLoading(true));
             const data = await getAllGenImages();
             dispatch(setGenImages([...data.imagesUrl]));
             return data.message
@@ -24,8 +24,8 @@ export const useFeature = () => {
 
     const handleAllChats = useCallback(async () => {
         try {
-            dispatch(setGenImagesError(null));
-            dispatch(setGenImagesLoading(false));
+            dispatch(setAllChatsError(null));
+            dispatch(setAllChatsLoading(true));
             const data = await getAllChats();
             dispatch(setAllChats([...data.allChats]));
             console.log(data);
