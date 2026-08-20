@@ -2,6 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { authRouter } from "./routes/auth.route.js";
 import { chatRouter } from "./routes/chat.route.js";
+import { featureRouter } from "./routes/feature.route.js";
 import cors from "cors"
 import morgan from 'morgan'
 export const app = express();
@@ -19,3 +20,4 @@ app.use(cors({
 
 app.use('/api/auth/v1' , authRouter);
 app.use("/api/ai/v1" , chatRouter);
+app.use('/api/feature/v1', featureRouter)
