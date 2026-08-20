@@ -5,10 +5,10 @@ import Home from "./feature/user/Home/Home";
 import BattleArena from "./components/pages/BattleArena"
 import ChatPage from "./feature/user/chat/shared/ChatPage"
 import Setting from "./components/pages/Setting";
-import Library from "./components/pages/Library";
-import Search from "./components/pages/Search";
 import Projects from "./components/pages/Projects";
 import NewChat from "./components/pages/NewChat";
+import Library from './feature/user/feature/shared/Library' 
+import Search from './feature/user/feature/shared/Search' 
 
 export const router = (user) => createBrowserRouter([
     {
