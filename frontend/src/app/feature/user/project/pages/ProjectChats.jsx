@@ -56,13 +56,13 @@ const ProjectChats = () => {
                 Project Workspace
               </span>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white mt-0.5">
-                {selectProject?.name || 'Project Chats'}
+                {selectProject?.title || 'Project Chats'}
               </h1>
             </div>
           </div>
 
           <button 
-            onClick={() => handleAddChatToProject(projectId)}
+            // onClick={() => handleAddChatToProject(projectId)}
             className="px-4 py-2.5 rounded-xl font-medium bg-slate-800 border border-slate-700 hover:bg-gradient-to-tr hover:from-pink-500 hover:via-purple-500 hover:to-cyan-400 transition-all duration-300 flex items-center justify-center space-x-2 text-sm shadow-md"
           >
             <MessageSquarePlus className="w-4 h-4" />

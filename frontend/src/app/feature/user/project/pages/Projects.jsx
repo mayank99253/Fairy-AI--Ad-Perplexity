@@ -42,7 +42,7 @@ const Projects = () => {
   const onCreateProjectSubmit = (e) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    handleCreateProject({ name: newProjectName });
+    handleCreateProject(newProjectName);
     setNewProjectName('');
     setIsModalOpen(false);
   };
@@ -69,13 +69,13 @@ const Projects = () => {
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Active Workspace</span>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-                    {currentProject?.name || 'Project Details'}
+                    {currentProject?.title || 'Project Details'}
                   </h1>
                 </div>
               </div>
 
               <button 
-                onClick={() => handleAddChatToProject(projectId)}
+                // onClick={() => handleAddChatToProject(projectId)}
                 className="px-4 py-2.5 rounded-xl font-medium bg-slate-800 border border-slate-700 hover:bg-gradient-to-tr hover:from-pink-500 hover:via-purple-500 hover:to-cyan-400 transition-all duration-300 flex items-center justify-center space-x-2 text-sm shadow-md"
               >
                 <MessageSquarePlus className="w-4 h-4" />

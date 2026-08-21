@@ -6,11 +6,14 @@ import chatModel from "../models/chat.model.js";
 export const createProject = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { title , description } = req.body;
+        const { title, description } = req.body;
 
-        if (!title || title.length === '') return apiError(res, 400, 'Title is required');
+        if (typeof title !== 'string' || !title.trim()) {
+            return apiError(res, 400, 'Title is required');
+        }
+        const normalizedTitle = title.trim();
 
-        const existProject = await projectModel.findOne({ title, user: userId });
+        const existProject = await projectModel.findOne({ title : normalizedTitle, user: userId });
         if (existProject) return apiError(res, 403, 'Project Title Should be Unique');
 
         const project = await projectModel.create({
