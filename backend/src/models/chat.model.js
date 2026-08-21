@@ -10,9 +10,14 @@ const chatSchema = new mongoose.Schema({
         type: String,
         default: "New Chat",
         required: true
+    },
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'project',
+        default: null
     }
-}, { 
-    timestamps: true 
+}, {
+    timestamps: true
 });
 
 const chatModel = mongoose.model("chat", chatSchema)

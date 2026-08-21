@@ -16,33 +16,33 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        select :false,
+        select: false,
     },
     verified: {
         type: Boolean,
         default: false
     },
-    resetOtp:{
-        type :String,
-        default : null
+    resetOtp: {
+        type: String,
+        default: null
     },
-    resetOtpExpiresAt : {
-        type :Date,
-        default : null
+    resetOtpExpiresAt: {
+        type: Date,
+        default: null
     },
-    verificationEmailSentAt : {
-        type :Date,
-        default : null
+    verificationEmailSentAt: {
+        type: Date,
+        default: null
     }
-}, { timestamps: true }) 
+}, { timestamps: true })
 
-userSchema.pre("save" , async function (){
+userSchema.pre("save", async function () {
     // check your password already hashed , if password is hashed the is will be false and you do not to hash the password
-    if(!this.isModified("password")) return ;
+    if (!this.isModified("password")) return;
 
     try {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password , salt);
+        this.password = await bcrypt.hash(this.password, salt);
     } catch (error) {
         throw error
     };
