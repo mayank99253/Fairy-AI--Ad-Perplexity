@@ -14,19 +14,26 @@ import {
   NotebookPen,
   Trash2,
   Menu,
-  X
+  X,
+  FolderPlus,
+  Folder
 } from 'lucide-react';
 import { useChat } from '../chat/hook/useChat';
 import { useSelector } from 'react-redux';
+import { useProject } from '../project/hook/useProject';
 
 export default function HomePage() {
   const { handleGetChat, handleDeleteChat } = useChat();
+  const { handleAddChatToProject, handleGetAllProjects } = useProject();
+  
   const { chats = [] } = useSelector((s) => s.chat || {});
   const { user } = useSelector((s) => s.auth || {});
+  const { allProject = [] } = useSelector((s) => s.project || {});
 
   useEffect(() => {
     handleGetChat();
-  }, [handleGetChat]);
+    handleGetAllProjects();
+  }, [handleGetChat, handleGetAllProjects]);
 
   const [activeChatId, setActiveChatId] = useState();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -36,6 +43,12 @@ export default function HomePage() {
     visible: false,
     x: 0,
     y: 0,
+    chatId: null
+  });
+
+  // Add to Project Modal State
+  const [projectModal, setProjectModal] = useState({
+    isOpen: false,
     chatId: null
   });
 
@@ -62,6 +75,7 @@ export default function HomePage() {
       if (e.key === 'Escape') {
         handleClickOutside();
         setIsMobileSidebarOpen(false);
+        setProjectModal({ isOpen: false, chatId: null });
       }
     };
 
@@ -82,6 +96,23 @@ export default function HomePage() {
       console.log('Delete chat triggered for ID:', chatId);
     }
     setContextMenu({ visible: false, x: 0, y: 0, chatId: null });
+  };
+
+  // Open Project Modal from Context Menu
+  const onOpenAddProjectModal = (chatId) => {
+    setProjectModal({ isOpen: true, chatId });
+    setContextMenu({ visible: false, x: 0, y: 0, chatId: null });
+  };
+
+  // Submit Handler to attach Chat to selected Project
+  const onConfirmAddToProject = (projectId) => {
+    if (projectModal.chatId && projectId) {
+      handleAddChatToProject(
+        projectId,
+        projectModal.chatId
+      );
+    }
+    setProjectModal({ isOpen: false, chatId: null });
   };
 
   const navItems = [
@@ -333,10 +364,10 @@ export default function HomePage() {
       {/* ================= RIGHT-CLICK CONTEXT MENU ================= */}
       {contextMenu.visible && (
         <div
-          className="fixed z-50 min-w-[140px] bg-[#0D1117]/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md p-1 animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-50 min-w-[150px] bg-[#0D1117]/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md p-1 animate-in fade-in zoom-in-95 duration-100"
           style={{ 
-            top: `${Math.min(contextMenu.y, window.innerHeight - 60)}px`, 
-            left: `${Math.min(contextMenu.x, window.innerWidth - 150)}px` 
+            top: `${Math.min(contextMenu.y, window.innerHeight - 80)}px`, 
+            left: `${Math.min(contextMenu.x, window.innerWidth - 160)}px` 
           }}
         >
           <button
@@ -346,6 +377,70 @@ export default function HomePage() {
             <Trash2 className="w-3.5 h-3.5" />
             <span>Delete Chat</span>
           </button>
+          <button
+            onClick={() => onOpenAddProjectModal(contextMenu.chatId)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <FolderPlus className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Add to Project</span>
+          </button>
+        </div>
+      )}
+
+      {/* ================= SELECT PROJECT MODAL ================= */}
+      {projectModal.isOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0D1117] border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+            
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <div className="flex items-center gap-2">
+                <FolderPlus className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-bold text-base text-white">Add Chat to Project</h3>
+              </div>
+              <button 
+                onClick={() => setProjectModal({ isOpen: false, chatId: null })}
+                className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400">Select a project below to attach this conversation:</p>
+
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              {allProject && allProject.length > 0 ? (
+                allProject.map((proj) => (
+                  <button
+                    key={proj._id || proj.id}
+                    onClick={() => onConfirmAddToProject(proj._id || proj.id)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 hover:bg-gradient-to-tr hover:from-pink-500 hover:via-purple-500 hover:to-cyan-400 transition-all duration-300 group text-left"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Folder className="w-4 h-4 text-cyan-400 group-hover:text-white shrink-0" />
+                      <span className="text-sm font-medium text-slate-200 group-hover:text-white truncate">
+                        {proj.title || 'Untitled Project'}
+                      </span>
+                    </div>
+                    <Plus className="w-4 h-4 text-slate-500 group-hover:text-white shrink-0" />
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-6 border border-dashed border-slate-800 rounded-xl">
+                  <p className="text-xs text-slate-500">No projects available.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setProjectModal({ isOpen: false, chatId: null })}
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+              >
+                Cancel
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 
