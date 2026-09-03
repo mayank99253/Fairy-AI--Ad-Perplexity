@@ -122,7 +122,9 @@ export const getChatMode = async (req, res) => {
         const { chatId } = req.params;
         if(!mongoose.Types.ObjectId.isValid(chatId)) return apiError(res, 400, "Invalid Chat ID");
 
-        const chat = await chatModel.findById(chatId).select('mode');
+        const chat = await chatModel
+            .findOne({ _id: chatId, user: req.user._id })
+            .select("mode");
         if (!chat) return apiError(res, 404, "Chat Not Found");
         res.json({ mode: chat?.mode });
     } catch (error) {

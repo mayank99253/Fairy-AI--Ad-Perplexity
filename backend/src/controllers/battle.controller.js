@@ -5,6 +5,7 @@ import {apiError} from "../config/errorHandler.js";
 import messageModel, { battleMessage } from "../models/message.model.js";
 import chatModel from "../models/chat.model.js";;
 import { generateChatTitle } from "../services/ai.service.js";
+import mongoose from "mongoose";
 
 export const sendMessageForBattle = async (req, res) => {
     try {
@@ -27,7 +28,7 @@ export const sendMessageForBattle = async (req, res) => {
         }
 
         const chatExists = chatId
-            ? await chatModel.findOne({ _id: chatId, user: userId })
+            ? await chatModel.findOne({ _id: chatId, user: userId , mode: 'battle' })
             : null;
 
         if (!chatExists && chatId) {
@@ -86,7 +87,7 @@ export const getBattleMessages = async (req, res) => {
     try {
         const { chatId } = req.params;
 
-        if (!chatId) {
+        if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
             return apiError(res, 400, "chatId is required");
         }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Swords } from 'lucide-react';
 import MessageInput from '../../chat/components/MessageInput';
+import BattleContainer from './BattleContainer';
 
 const BattleArena = () => {
   const path = useLocation()
@@ -25,6 +26,10 @@ const BattleArena = () => {
           </div>
         </div>
       </header>
+
+      <div className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-slate-900'>
+        <BattleContainer />
+      </div>
 
       {/* INPUT FORM SECTION */}
       <MessageInput pathname={path.pathname}/>
