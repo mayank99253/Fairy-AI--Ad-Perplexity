@@ -1,25 +1,51 @@
 import { ChevronDown } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import MessageInput from '../components/MessageInput';
 import ChatContainer from '../components/ChatContainer';
 import { useChat } from '../hook/useChat';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import BattleContainer from '../../battle/shared/BattleContainer';
+import { useBattle } from '../../battle/hook/useBattle';
+import BattleSkeletonLoader from '../../../../components/Loader/BattleSkeletonLoader';
+import ChatSkeletonLoader from '../../../../components/Loader/ChatSkeletonLoader';
 
 const ChatPage = () => {
   const { chatId } = useParams();
-  const { handleGetChatMessage } = useChat();
+  const { handleGetChatMessage, handleGetChatMode } = useChat();
+  const { handleGetBattleMessages } = useBattle();
+  const { currentChatMode, currentChatLoading, messagesLoading } = useSelector((s) => s.chat)
+  const { battleMessagesLoading, battleMessageLoading } = useSelector((s) => s.battle)
+  const path = useLocation()
 
   useEffect(() => {
-    if (chatId) handleGetChatMessage(chatId);
-  }, [handleGetChatMessage, chatId]);
+    if (chatId) handleGetChatMode(chatId);
+  }, [handleGetChatMode, chatId]);
+
+
+useEffect(() => {
+  if (chatId) handleGetChatMode(chatId);
+}, [handleGetChatMode, chatId]);
+
+useEffect(() => {
+  if (!chatId || !currentChatMode) return;
+
+  if (currentChatMode === 'battle') {
+    handleGetBattleMessages(chatId);
+  } else if (currentChatMode === 'normal') {
+    handleGetChatMessage(chatId);
+  }
+}, [chatId, currentChatMode, handleGetBattleMessages, handleGetChatMessage]);
 
   const [selectedModel, setSelectedModel] = useState('Gemini-3.5-Flash-Lite');
+
+  if (battleMessagesLoading || battleMessageLoading) return <BattleSkeletonLoader />
+  if (messagesLoading || currentChatLoading ) return <ChatSkeletonLoader />
 
   return (
     // Fixed viewport container (h-screen, overflow-hidden)
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#090C10] text-slate-100">
-      
+
       {/* 1. Header (shrink-0 prevents shrinking) */}
       <header className="z-10 flex h-12 shrink-0 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
@@ -36,12 +62,12 @@ const ChatPage = () => {
 
       {/* 2. Messages Viewport (Scrollable middle area) */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
-        <ChatContainer />
+        {currentChatMode === 'normal' ? <ChatContainer /> : <BattleContainer />}
       </div>
 
       {/* 3. Bottom Input Bar (shrink-0 stays fixed at bottom) */}
       <div className="w-full shrink-0 border-t border-slate-800/30 bg-[#090C10] px-3 pb-3 pt-2 sm:px-6">
-        <MessageInput />
+        <MessageInput pathname={path.pathname} />
       </div>
 
     </div>

@@ -84,7 +84,7 @@ export const getMessage = async (req, res) => {
 
         const messages = await messageModel.find({ chat: chat._id });
 
-        return res.status(200).json({ message: "Messages fetch successfully", messages })
+        return res.status(200).json({ message: "Messages fetch successfully", messages , chat })
     } catch (error) {
         console.error(error)
         return apiError(res, 500, "Internal Server Error")
@@ -115,4 +115,20 @@ export const deleteChat = async (req, res) => {
         console.error(error);
         return apiError(res, 500, "Internal Server Error")
     }
+}
+
+export const getChatMode = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(chatId)) return apiError(res, 400, "Invalid Chat ID");
+
+        const chat = await chatModel
+            .findOne({ _id: chatId, user: req.user._id })
+            .select("mode");
+        if (!chat) return apiError(res, 404, "Chat Not Found");
+        res.json({ mode: chat?.mode });
+    } catch (error) {
+        console.error(error);
+        return apiError(res, 500, "Internal Server Error")
+  }
 }

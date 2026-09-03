@@ -1,8 +1,9 @@
 import {useDispatch } from 'react-redux'
-import { setChats , setChatsError ,setChatsLoading ,setMessages ,setMessagesError ,setMessagesLoading } from '../state/chat.slice'
-import { sendMessage , getChatMessage , getChats, deleteChat } from '../services/chat.api'
+import { setChats , setChatsError ,setChatsLoading ,setCurrentChat,setCurrentChatError,setCurrentChatLoading,setCurrentChatMode,setMessages ,setMessagesError ,setMessagesLoading } from '../state/chat.slice'
+import { sendMessage , getChatMessage , getChats, deleteChat, getChatMode } from '../services/chat.api'
 import {toast} from 'react-toastify'
 import { useCallback } from 'react'
+import { current } from '@reduxjs/toolkit'
 
 export const useChat = ()=>{
     const dispatch = useDispatch();
@@ -29,9 +30,11 @@ export const useChat = ()=>{
          try {
              dispatch(setMessagesLoading(true));
             dispatch(setMessages([]))
+            dispatch(setCurrentChat(null));
             dispatch(setMessagesError(null));
             const data = await getChatMessage(chatId);
             dispatch(setMessages([...data.messages]))
+            dispatch(setCurrentChat(data.chat))
             return data.message;
         } catch (error) {
             toast.error(error.message);
@@ -72,10 +75,27 @@ export const useChat = ()=>{
         }
     };
 
+    const handleGetChatMode = useCallback(async(chatId)=>{
+        try {
+            dispatch(setCurrentChatLoading(true));
+            dispatch(setCurrentChatMode(null))
+            dispatch(setCurrentChatError(null));
+            const data = await getChatMode(chatId);
+            dispatch(setCurrentChatMode(data.mode));
+            return data.mode;
+        } catch (error) {
+            toast.error(error.message);
+            dispatch(setCurrentChatError(error.message));
+        }finally{
+            dispatch(setCurrentChatLoading(false))
+        }
+    }, [dispatch])
+
     return {
         handleSendMessage,
         handleGetChatMessage,
         handleGetChat,
         handleDeleteChat,
+        handleGetChatMode
     }
 }

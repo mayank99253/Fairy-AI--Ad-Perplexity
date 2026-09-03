@@ -167,12 +167,12 @@ export default function HomePage() {
           {/* App Header & Branding */}
           <div className="p-4 flex items-center justify-between border-b border-slate-800/50">
             <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-[2px] shadow-lg shadow-purple-500/20">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 p-[2px] shadow-lg shadow-purple-500/20">
                 <div className="h-full w-full bg-[#0D1117] rounded-[10px] flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400" />
+                  <img src="/logo.png" className='h-full w-full object-contain' alt="Fairy AI" title='Fairy AI' />
                 </div>
               </div>
-              <div>
+              <div className=''>
                 <h1 className="font-bold text-base bg-gradient-to-r from-pink-400 via-purple-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
                   Fairy
                 </h1>

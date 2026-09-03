@@ -2,9 +2,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../feature/auth/hook/useAuth';
 import MessageInput from '../../feature/user/chat/components/MessageInput';
+import { useLocation } from 'react-router-dom';
 
 const NewChat = () => {
     const { user } = useSelector((s) => s.auth);
+
+    const path = useLocation()
 
     // Helper to get time-of-day greeting
     const getGreeting = () => {
@@ -41,7 +44,7 @@ const NewChat = () => {
             </div>
 
             <div className="w-full max-w-2xl">
-                <MessageInput />
+                <MessageInput pathname={path.pathname} />
             </div>
         </div>
     );

@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from './feature/auth/pages/Login'
 import Signup from "./feature/auth/pages/Signup";
 import Home from "./feature/user/Home/Home";
-import BattleArena from "./components/pages/BattleArena"
 import ChatPage from "./feature/user/chat/shared/ChatPage"
 import Setting from "./components/pages/Setting";
 import NewChat from "./components/pages/NewChat";
@@ -10,6 +9,7 @@ import Library from './feature/user/feature/shared/Library'
 import Search from './feature/user/feature/shared/Search' 
 import Projects from "./feature/user/project/pages/Projects";
 import ProjectChats from "./feature/user/project/pages/ProjectChats";
+import BattleArena from './feature/user/battle/shared/BattleArena'
 
 export const router = (user) => createBrowserRouter([
     {

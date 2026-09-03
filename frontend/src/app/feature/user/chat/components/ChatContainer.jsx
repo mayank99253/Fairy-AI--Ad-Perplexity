@@ -6,7 +6,6 @@ const ChatContainer = () => {
   const { messages } = useSelector((s) => s.chat);
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to bottom on new messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -16,7 +15,8 @@ const ChatContainer = () => {
   }, [messages]);
 
   return (
-    <div className="custom-scrollbar h-full w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+    /* Changed h-full to h-0 min-h-full and added custom-scrollbar */
+    <div className="custom-scrollbar h-0 min-h-full w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-4xl flex-col space-y-6">
         {messages.length === 0 ? (
           <div className="my-auto flex h-full min-h-[50vh] flex-col items-center justify-center space-y-4 py-20 text-center text-slate-500">
@@ -34,7 +34,7 @@ const ChatContainer = () => {
           messages.map((msg) => (
             <div
               key={msg._id}
-              className={`flex gap-3 sm:gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex gap-3 sm:gap-4 min-w-0 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {/* AI Avatar */}
               {msg.role === 'ai' && (
@@ -46,7 +46,7 @@ const ChatContainer = () => {
               )}
 
               {/* Message Content Container */}
-              <div className={`flex max-w-[85%] flex-col sm:max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`flex max-w-[85%] flex-col sm:max-w-[75%] min-w-0 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 
                 {/* Sender Name & Model info */}
                 <div className="mb-1 flex items-center gap-2 px-1 text-[11px] text-slate-400">
@@ -59,7 +59,7 @@ const ChatContainer = () => {
 
                 {/* Bubble */}
                 <div
-                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed break-words ${
+                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed break-words overflow-hidden ${
                     msg.role === 'user'
                       ? 'rounded-tr-none bg-gradient-to-r from-pink-600/90 via-purple-600/90 to-indigo-600/90 text-white shadow-lg shadow-purple-900/20'
                       : 'rounded-tl-none border border-slate-800 bg-slate-900/90 text-slate-200 shadow-md'
@@ -79,7 +79,7 @@ const ChatContainer = () => {
 
                   {/* Text Content Rendering */}
                   {msg.content && (
-                    <p className="whitespace-pre-line">{msg.content}</p>
+                    <p className="whitespace-pre-line break-all">{msg.content}</p>
                   )}
                 </div>
 
@@ -109,7 +109,6 @@ const ChatContainer = () => {
           ))
         )}
 
-        {/* Scroll Anchor */}
         <div ref={messagesEndRef} />
       </div>
     </div>
