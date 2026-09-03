@@ -136,7 +136,7 @@ const Library = () => {
               </div>
             ))}
           </div>
-        )};
+        )}
 
       </div>
     </div>

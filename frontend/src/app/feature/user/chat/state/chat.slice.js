@@ -11,7 +11,11 @@ const chatSlice = createSlice({
         messagesLoading: false,
         messagesError: null,
 
-        currentChat: null
+        currentChat: null,
+
+        currentChatMode : null ,
+        currentChatLoading: false,
+        currentChatError: null,
     },
     reducers: {
         setChats: (state, action) => { state.chats = action.payload },
@@ -23,6 +27,10 @@ const chatSlice = createSlice({
         setMessagesError: (state, action) => { state.messagesError = action.payload },
         
         setCurrentChat: (state, action) => { state.currentChat = action.payload },
+        
+        setCurrentChatMode: (state, action) => { state.currentChatMode = action.payload },
+        setCurrentChatLoading: (state, action) => { state.currentChatLoading = action.payload },
+        setCurrentChatError: (state, action) => { state.currentChatError = action.payload },
     },
 });
 
@@ -33,7 +41,8 @@ export const {
     setMessages,
     setMessagesError,
     setMessagesLoading,  
-    setCurrentChat
+    setCurrentChatMode ,
+    setCurrentChat, setCurrentChatError , setCurrentChatLoading
 } = chatSlice.actions
 
 export default chatSlice.reducer

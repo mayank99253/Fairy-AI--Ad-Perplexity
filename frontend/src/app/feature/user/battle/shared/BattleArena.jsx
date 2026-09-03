@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Swords, Send, Loader2 } from 'lucide-react';
-import BattleContainer from './BattleContainer'; 
+import { Swords } from 'lucide-react';
 import MessageInput from '../../chat/components/MessageInput';
 
 const BattleArena = () => {
@@ -26,11 +25,6 @@ const BattleArena = () => {
           </div>
         </div>
       </header>
-
-      {/* MESSAGES LIST SECTION */}
-      <main className="flex-1 overflow-y-auto custom-scrollbar">
-        <BattleContainer />
-      </main>
 
       {/* INPUT FORM SECTION */}
       <MessageInput pathname={path.pathname}/>

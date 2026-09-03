@@ -116,3 +116,17 @@ export const deleteChat = async (req, res) => {
         return apiError(res, 500, "Internal Server Error")
     }
 }
+
+export const getChatMode = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        if(!mongoose.Types.ObjectId.isValid(chatId)) return apiError(res, 400, "Invalid Chat ID");
+
+        const chat = await chatModel.findById(chatId).select('mode');
+        if (!chat) return apiError(res, 404, "Chat Not Found");
+        res.json({ mode: chat?.mode });
+    } catch (error) {
+        console.error(error);
+        return apiError(res, 500, "Internal Server Error")
+  }
+}

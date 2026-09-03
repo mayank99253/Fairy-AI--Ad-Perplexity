@@ -93,6 +93,7 @@ export const getBattleMessages = async (req, res) => {
         const messages = await battleMessage.find({ chat: chatId }).sort({ createdAt: 1 });
 
         return res.status(200).json({
+            message : "Messages fetch successfully",
             success: true,
             chatId,
             messages
