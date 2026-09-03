@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useChat } from '../hook/useChat';
 
-const MessageInput = () => {
+const MessageInput = ({pathname}) => {
     const [inputMessage, setInputMessage] = useState('');
     const { chatId } = useParams();
     const { handleSendMessage } = useChat();
     const navigate = useNavigate()
+
+    console.log(pathname )
 
     const onSend = async (e) => {
         e?.preventDefault();
@@ -16,8 +18,9 @@ const MessageInput = () => {
         const userText = inputMessage;
         setInputMessage('');
 
-        const result = await handleSendMessage(userText, chatId);
-        if(!result) return setInputMessage(userText)
+       if(pathname ==="battle"){
+
+       }{}
         if(!chatId && result?.chat) {
           navigate(`/${result?.chat}`)
         }

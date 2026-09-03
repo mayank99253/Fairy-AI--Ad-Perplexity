@@ -5,10 +5,12 @@ import ChatContainer from '../components/ChatContainer';
 import { useChat } from '../hook/useChat';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import BattleContainer from '../../battle/shared/BattleContainer';
 
 const ChatPage = () => {
   const { chatId } = useParams();
   const { handleGetChatMessage } = useChat();
+  const {currentChat} = useSelector((s)=> s.chat)
 
   useEffect(() => {
     if (chatId) handleGetChatMessage(chatId);
@@ -19,7 +21,7 @@ const ChatPage = () => {
   return (
     // Fixed viewport container (h-screen, overflow-hidden)
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#090C10] text-slate-100">
-      
+
       {/* 1. Header (shrink-0 prevents shrinking) */}
       <header className="z-10 flex h-12 shrink-0 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
@@ -35,8 +37,8 @@ const ChatPage = () => {
       </header>
 
       {/* 2. Messages Viewport (Scrollable middle area) */}
-      <div className="relative flex flex-1 flex-col overflow-hidden">
-        <ChatContainer />
+      <div className="flex h-full flex-col">
+        {currentChat?.mode === 'battle' ? <BattleContainer /> : <ChatContainer />}
       </div>
 
       {/* 3. Bottom Input Bar (shrink-0 stays fixed at bottom) */}

@@ -1,5 +1,5 @@
 import {useDispatch } from 'react-redux'
-import { setChats , setChatsError ,setChatsLoading ,setMessages ,setMessagesError ,setMessagesLoading } from '../state/chat.slice'
+import { setChats , setChatsError ,setChatsLoading ,setCurrentChat,setMessages ,setMessagesError ,setMessagesLoading } from '../state/chat.slice'
 import { sendMessage , getChatMessage , getChats, deleteChat } from '../services/chat.api'
 import {toast} from 'react-toastify'
 import { useCallback } from 'react'
@@ -29,9 +29,11 @@ export const useChat = ()=>{
          try {
              dispatch(setMessagesLoading(true));
             dispatch(setMessages([]))
+            dispatch(setCurrentChat(null));
             dispatch(setMessagesError(null));
             const data = await getChatMessage(chatId);
             dispatch(setMessages([...data.messages]))
+            dispatch(setCurrentChat(data.chat));
             return data.message;
         } catch (error) {
             toast.error(error.message);

@@ -15,6 +15,11 @@ const chatSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'project',
         default: null
+    },
+    mode: {
+        type: String,
+        enum: ["normal", "battle"],
+        default: "normal"
     }
 }, {
     timestamps: true

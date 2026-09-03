@@ -84,7 +84,7 @@ export const getMessage = async (req, res) => {
 
         const messages = await messageModel.find({ chat: chat._id });
 
-        return res.status(200).json({ message: "Messages fetch successfully", messages })
+        return res.status(200).json({ message: "Messages fetch successfully", messages , chat })
     } catch (error) {
         console.error(error)
         return apiError(res, 500, "Internal Server Error")

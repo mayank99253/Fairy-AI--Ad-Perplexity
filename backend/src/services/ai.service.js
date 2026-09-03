@@ -24,7 +24,6 @@ const agent = createAgent({
   model: geminiModel
 });
 
-
 export const generateChatTitle = async (message) => {
   try {
     const result = await mistralModel.invoke([new SystemMessage(`you are a helpful assistant that generate concise and descriptive titles for the chat conversation
